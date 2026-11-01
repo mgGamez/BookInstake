@@ -6,9 +6,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 const instructions = {
-  document: "Analyze the supplied business document in 120 words or fewer. Return exactly four complete plain-text lines beginning Summary:, Key fields:, Risk:, and Next action:. Do not use markdown, hashtags, asterisks, a Result heading, or partial sentences. Do not invent facts.",
-  workflow: "Create a practical workflow draft in 160 words or fewer. Return complete plain-text lines beginning Goal:, Trigger:, Steps:, Decision:, Owner:, and Complete when:. Keep Steps to three concise numbered actions. Do not use markdown, hashtags, asterisks, a Result heading, or partial sentences. Flag missing information in the Decision line.",
-  email: "Draft a professional business email in 130 words or fewer. Return a complete plain-text Subject: line, followed by the email body. Do not use markdown, hashtags, asterisks, a Result heading, or partial sentences. Do not claim facts not supplied.",
+  document: "Analyze the supplied business document thoroughly. Include a clear summary, extracted key fields, risks or missing information, and a recommended next action. Use normal Markdown headings and lists when they improve clarity. Do not invent facts or leave sentences incomplete.",
+  workflow: "Turn the supplied business requirement into a detailed, practical workflow draft. Include the goal, trigger, ordered steps, decision points, owners, exceptions, and completion condition. Use normal Markdown headings and numbered lists when they improve clarity. Flag missing assumptions and do not leave sentences incomplete.",
+  email: "Draft a complete, professional business email from the supplied context. Include a subject line and a polished email body. Markdown is allowed where useful. Do not claim actions, dates, or facts that were not supplied and do not leave sentences incomplete.",
 } as const;
 
 type Task = keyof typeof instructions;
