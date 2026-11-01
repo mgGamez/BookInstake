@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, LoaderCircle, Sparkles } from "lucide-react";
 
 type Task = "document" | "workflow" | "email";
@@ -16,7 +16,18 @@ export function AIWorkbench({ task }: { task: Task }) {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
+  const [model, setModel] = useState("");
   const text = copy[task];
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/ai/status").then(async (response) => {
+      const payload = await response.json() as { configured?: boolean; model?: string };
+      if (active) { setIsConfigured(Boolean(payload.configured)); setModel(payload.model || ""); }
+    }).catch(() => { if (active) setIsConfigured(false); });
+    return () => { active = false; };
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,5 +44,5 @@ export function AIWorkbench({ task }: { task: Task }) {
     finally { setIsLoading(false); }
   }
 
-  return <section className="max-w-6xl"><header className="border-b border-[var(--rule)] pb-8"><div className="flex items-center gap-3 text-[var(--accent)]"><Sparkles size={18} strokeWidth={1.5} /><span className="text-sm font-semibold">AI workspace</span></div><h1 className="mt-4 text-2xl font-semibold tracking-[-.04em] text-white sm:text-[32px]">{text.title}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">{text.description}</p></header><div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,.8fr)]"><form onSubmit={submit} className="panel p-5 sm:p-7"><label htmlFor={`${task}-content`} className="text-sm font-semibold text-white">{text.label}</label><textarea id={`${task}-content`} value={content} onChange={(event) => setContent(event.target.value)} placeholder={text.placeholder} className="mt-4 min-h-72 w-full resize-y rounded-xl border border-[var(--border)] bg-black/20 p-4 text-sm leading-6 text-white outline-none placeholder:text-[var(--faint)] focus:border-[var(--accent)]" /><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-[var(--faint)]">Sent only when you select {text.action.toLowerCase()}.</p><button type="submit" disabled={isLoading || !content.trim()} className="primary-action disabled:cursor-not-allowed disabled:opacity-45">{isLoading ? <><LoaderCircle size={16} className="animate-spin" />Working…</> : <>{text.action} <ArrowRight size={16} /></>}</button></div>{error && <p className="mt-4 border-l-2 border-red-400 pl-3 text-sm leading-6 text-red-200">{error}</p>}</form><aside className="panel min-h-72 p-5 sm:p-7"><p className="text-sm font-semibold text-white">Result</p>{result ? <pre className="mt-5 whitespace-pre-wrap font-sans text-sm leading-7 text-[var(--muted)]">{result}</pre> : <p className="mt-5 text-sm leading-7 text-[var(--faint)]">Your AI output will appear here. Nothing is generated until you submit content and configure a server-side provider key.</p>}</aside></div></section>;
+  return <section className="max-w-6xl"><header className="border-b border-[var(--rule)] pb-8"><div className="flex items-center gap-3 text-[var(--accent)]"><Sparkles size={18} strokeWidth={1.5} /><span className="text-sm font-semibold">{isConfigured ? `AI ready${model ? ` · ${model}` : ""}` : "AI workspace"}</span></div><h1 className="mt-4 text-2xl font-semibold tracking-[-.04em] text-white sm:text-[32px]">{text.title}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">{text.description}</p></header><div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,.8fr)]"><form onSubmit={submit} className="panel p-5 sm:p-7"><label htmlFor={`${task}-content`} className="text-sm font-semibold text-white">{text.label}</label><textarea id={`${task}-content`} value={content} onChange={(event) => setContent(event.target.value)} placeholder={text.placeholder} className="mt-4 min-h-72 w-full resize-y rounded-xl border border-[var(--border)] bg-black/20 p-4 text-sm leading-6 text-white outline-none placeholder:text-[var(--faint)] focus:border-[var(--accent)]" /><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-[var(--faint)]">{isConfigured === false ? "Add OPENAI_API_KEY to enable this workspace." : `Sent only when you select ${text.action.toLowerCase()}.`}</p><button type="submit" disabled={isLoading || !content.trim() || isConfigured === false} className="primary-action disabled:cursor-not-allowed disabled:opacity-45">{isLoading ? <><LoaderCircle size={16} className="animate-spin" />Working…</> : <>{text.action} <ArrowRight size={16} /></>}</button></div>{error && <p className="mt-4 border-l-2 border-red-400 pl-3 text-sm leading-6 text-red-200">{error}</p>}</form><aside className="panel min-h-72 p-5 sm:p-7"><p className="text-sm font-semibold text-white">Result</p>{result ? <pre className="mt-5 whitespace-pre-wrap font-sans text-sm leading-7 text-[var(--muted)]">{result}</pre> : <p className="mt-5 text-sm leading-7 text-[var(--faint)]">{isConfigured === false ? "AI is not configured. Add the server-side environment variables, restart the application, and return here to generate a result." : "Your AI output will appear here. Nothing is generated until you submit content."}</p>}</aside></div></section>;
 }
