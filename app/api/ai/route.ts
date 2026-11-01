@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOpenAIClient, getOpenAIModel, isAIConfigured } from "@/lib/openai";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -11,13 +13,32 @@ const instructions = {
 
 type Task = keyof typeof instructions;
 
+function requiresAuthentication() { return process.env.NODE_ENV === "production" || process.env.AI_REQUIRE_AUTH === "true"; }
+
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  try { return new URL(origin).host === request.headers.get("host"); } catch { return false; }
+}
+
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return NextResponse.json({ error: "Cross-origin requests are not allowed." }, { status: 403 });
   if (!isAIConfigured()) return NextResponse.json({ error: "AI is not configured. Add OPENAI_API_KEY to .env.local and restart the app." }, { status: 503 });
 
   try {
     const body = await request.json() as { task?: Task; content?: string };
     if (!body.task || !(body.task in instructions) || typeof body.content !== "string" || !body.content.trim()) return NextResponse.json({ error: "Provide a supported task and content." }, { status: 400 });
     if (body.content.length > 12000) return NextResponse.json({ error: "Keep requests under 12,000 characters." }, { status: 400 });
+
+    if (requiresAuthentication()) {
+      if (!isSupabaseConfigured()) return NextResponse.json({ error: "Production AI access requires Supabase authentication. Configure Supabase first." }, { status: 503 });
+      const supabase = await createSupabaseServerClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) return NextResponse.json({ error: "Sign in before using AI tools." }, { status: 401 });
+      const { data: allowed, error: limitError } = await supabase.rpc("check_and_record_ai_request", { request_task: body.task });
+      if (limitError) return NextResponse.json({ error: "AI usage tracking is not configured. Apply the Supabase schema before enabling production AI access." }, { status: 503 });
+      if (!allowed) return NextResponse.json({ error: "AI request limit reached. Please wait a minute and try again." }, { status: 429 });
+    }
 
     const completion = await getOpenAIClient().chat.completions.create({
       model: getOpenAIModel(),

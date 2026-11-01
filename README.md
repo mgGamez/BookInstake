@@ -33,6 +33,12 @@ The Document Processing, Workflow Generator, and Email Assistant workspaces show
 3. Keep `OPENAI_BASE_URL` blank for the official OpenAI API.
 4. Deploy.
 
+## Production authentication and data
+
+Before enabling a shared production workspace, create a Supabase project and run [`supabase/schema.sql`](supabase/schema.sql) in its SQL Editor. Then add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel.
+
+Production AI requests require a signed-in Supabase user and are limited to 20 requests per user per minute by the database function in the schema. Local development can retain `AI_REQUIRE_AUTH=false` while you configure Supabase. Set it to `true` in every shared environment.
+
 ## OpenAI-compatible alternatives
 
 The server supports an OpenAI-compatible endpoint through `OPENAI_BASE_URL`. For Ollama running on the same machine as the app:
