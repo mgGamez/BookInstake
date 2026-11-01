@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import OpenAI from "openai";
 import { getOpenAIClient, getOpenAIModel, isAIConfigured } from "@/lib/openai";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -19,6 +20,15 @@ function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
   try { return new URL(origin).host === request.headers.get("host"); } catch { return false; }
+}
+
+function providerErrorMessage(error: unknown) {
+  if (error instanceof OpenAI.AuthenticationError) return "OpenAI rejected the API key. Check OPENAI_API_KEY and restart the app.";
+  if (error instanceof OpenAI.PermissionDeniedError) return "This API key does not have permission to use the configured model.";
+  if (error instanceof OpenAI.NotFoundError) return "The configured model was not found. Check OPENAI_MODEL.";
+  if (error instanceof OpenAI.RateLimitError) return "OpenAI rate limit or billing limit reached. Check your API billing and usage limits.";
+  if (error instanceof OpenAI.APIConnectionError) return "The AI endpoint could not be reached. Leave OPENAI_BASE_URL blank for official OpenAI.";
+  return "The AI request could not be completed. Check the model, endpoint, and API key.";
 }
 
 export async function POST(request: Request) {
@@ -50,6 +60,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ result });
   } catch (error) {
     console.error("AI request failed", error);
-    return NextResponse.json({ error: "The AI request could not be completed. Check the model, endpoint, and API key." }, { status: 502 });
+    return NextResponse.json({ error: providerErrorMessage(error) }, { status: 502 });
   }
 }
