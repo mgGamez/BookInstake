@@ -28,6 +28,9 @@ function providerErrorMessage(error: unknown) {
   if (error instanceof AIProviderError && error.status === 404) return "The configured model was not found. Check the model name.";
   if (error instanceof AIProviderError && error.status === 429) return `${provider} rate limit or billing limit reached. Check provider usage limits.`;
   if (error instanceof AIProviderError) return error.message;
+  if (error instanceof Error && error.name === "TimeoutError") return `${provider} took longer than 45 seconds to respond. Try a shorter request or a faster model.`;
+  if (error instanceof Error && error.name === "AbortError") return `${provider} request was cancelled before it completed.`;
+  if (error instanceof Error && error.message === "fetch failed") return `${provider} could not be reached. Check your internet connection, firewall, and provider API availability.`;
   return "The AI request could not be completed. Check the model, endpoint, and API key.";
 }
 
