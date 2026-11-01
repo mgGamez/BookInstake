@@ -6,9 +6,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 const instructions = {
-  document: "Analyze the supplied business document. Return concise markdown with: Summary, Key fields, Risks or missing information, and a recommended next action. Do not invent facts.",
-  workflow: "Turn the supplied business requirement into a practical workflow draft. Return concise markdown with: Goal, Trigger, ordered steps, decision points, owner, and completion condition. Flag missing assumptions.",
-  email: "Draft a professional business email from the supplied context. Return only the email with a subject line. Do not claim actions, dates, or facts that were not supplied.",
+  document: "Analyze the supplied business document. Use short plain-text sections named Summary, Key fields, Risks or missing information, and Recommended next action. Do not use markdown symbols, hashtags, or asterisks. Do not invent facts.",
+  workflow: "Turn the supplied business requirement into a practical workflow draft. Use short plain-text sections named Goal, Trigger, Steps, Decision points, Owner, and Completion condition. Do not use markdown symbols, hashtags, or asterisks. Flag missing assumptions.",
+  email: "Draft a professional business email from the supplied context. Return only a plain-text subject line and email. Do not use markdown symbols, hashtags, or asterisks. Do not claim actions, dates, or facts that were not supplied.",
 } as const;
 
 type Task = keyof typeof instructions;

@@ -27,7 +27,7 @@ async function generateWithGemini(systemInstruction: string, content: string) {
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemInstruction }] }, contents: [{ role: "user", parts: [{ text: content }] }], generationConfig: { temperature: 0.2 } }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemInstruction }] }, contents: [{ role: "user", parts: [{ text: content }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 700 } }),
   });
   const payload = await response.json() as { error?: { message?: string }; candidates?: { content?: { parts?: { text?: string }[] } }[] };
   if (!response.ok) throw new AIProviderError(payload.error?.message || "Gemini could not complete the request.", response.status);
