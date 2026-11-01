@@ -2,13 +2,28 @@
 
 import Link from "next/link";
 import { BookOpenCheck, ChevronDown, Menu, Settings, X } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { productModules } from "@/lib/modules";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/status").then(async (response) => {
+      const payload = await response.json() as { authenticated?: boolean; email?: string | null };
+      setUserEmail(payload.authenticated ? payload.email || null : null);
+    }).catch(() => setUserEmail(null));
+  }, []);
+
+  async function signOut() {
+    await fetch("/api/auth/sign-out", { method: "POST" });
+    setUserEmail(null);
+    router.replace("/");
+  }
 
   const navigation = (
     <nav aria-label="Main navigation" className="flex h-full flex-col px-3 py-5">
@@ -18,5 +33,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </nav>
   );
 
-  return <div className="min-h-screen bg-[var(--ground)]"><aside className="fixed inset-y-0 left-0 z-30 hidden w-[244px] border-r border-[var(--border)] bg-[#0b0e13]/95 lg:block">{navigation}</aside><div className="lg:pl-[244px]"><header className="flex h-16 items-center border-b border-[var(--border)] bg-[#0b0e13]/90 px-4 sm:px-7"><button type="button" className="p-2 text-white lg:hidden" onClick={() => setIsOpen(true)} aria-label="Open navigation"><Menu size={20} /></button><div className="hidden flex-1 lg:block"><span className="text-xs font-medium text-[var(--faint)]">Operations</span><span className="mx-2 text-[var(--faint)]">/</span><span className="text-xs font-semibold text-white">Foundation</span></div><div className="ml-auto flex h-full items-center gap-5 border-l border-[var(--border)] pl-5"><span className="status-line">Workspace is staged</span><Link href="/sign-in" className="text-xs font-semibold text-[var(--accent-strong)]">Sign in</Link></div></header><main className="mx-auto w-full max-w-[1380px] px-5 py-9 sm:px-7 lg:px-10 lg:py-12">{children}</main></div>{isOpen && <div className="fixed inset-0 z-50 bg-[#0b0e13] lg:hidden"><button className="absolute right-3 top-3 p-2 text-white" aria-label="Close navigation" onClick={() => setIsOpen(false)}><X size={20} /></button>{navigation}</div>}</div>;
+  return <div className="min-h-screen bg-[var(--ground)]"><aside className="fixed inset-y-0 left-0 z-30 hidden w-[244px] border-r border-[var(--border)] bg-[#0b0e13]/95 lg:block">{navigation}</aside><div className="lg:pl-[244px]"><header className="flex h-16 items-center border-b border-[var(--border)] bg-[#0b0e13]/90 px-4 sm:px-7"><button type="button" className="p-2 text-white lg:hidden" onClick={() => setIsOpen(true)} aria-label="Open navigation"><Menu size={20} /></button><div className="hidden flex-1 lg:block"><span className="text-xs font-medium text-[var(--faint)]">Operations</span><span className="mx-2 text-[var(--faint)]">/</span><span className="text-xs font-semibold text-white">Foundation</span></div><div className="ml-auto flex h-full items-center gap-5 border-l border-[var(--border)] pl-5"><span className="status-line">Workspace is staged</span>{userEmail ? <div className="flex items-center gap-3"><span className="max-w-40 truncate text-xs font-semibold text-white">{userEmail}</span><button type="button" onClick={() => void signOut()} className="text-xs font-semibold text-[var(--accent-strong)]">Sign out</button></div> : <Link href="/sign-in" className="text-xs font-semibold text-[var(--accent-strong)]">Sign in</Link>}</div></header><main className="mx-auto w-full max-w-[1380px] px-5 py-9 sm:px-7 lg:px-10 lg:py-12">{children}</main></div>{isOpen && <div className="fixed inset-0 z-50 bg-[#0b0e13] lg:hidden"><button className="absolute right-3 top-3 p-2 text-white" aria-label="Close navigation" onClick={() => setIsOpen(false)}><X size={20} /></button>{navigation}</div>}</div>;
 }
