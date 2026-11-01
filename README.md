@@ -51,6 +51,18 @@ OPENAI_MODEL=qwen2.5:7b
 
 `localhost` cannot reach a user’s computer from Vercel. A public web deployment needs an HTTPS-hosted, authenticated AI endpoint or a hosted API provider.
 
+## Configure Gemini
+
+Gemini uses its own public HTTPS API, so it does not need an `OPENAI_BASE_URL`. Create an API key in [Google AI Studio](https://aistudio.google.com/app/apikey), then configure:
+
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-gemini-key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+Use the exact model name shown in your Google AI Studio project. Remove or leave blank the OpenAI key settings when using Gemini.
+
 ## Current persistence
 
 Workflow drafts, local members, and the activity view are stored in the browser until Supabase authentication and database storage are connected. They are clearly identified as local workspace data in the interface.

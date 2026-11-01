@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { getOpenAIClient, getOpenAIModel, isAIConfigured } from "@/lib/openai";
+import { AIProviderError, generateAIText, getAIProvider, isAIConfigured } from "@/lib/ai";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -23,17 +22,18 @@ function isSameOrigin(request: Request) {
 }
 
 function providerErrorMessage(error: unknown) {
-  if (error instanceof OpenAI.AuthenticationError) return "OpenAI rejected the API key. Check OPENAI_API_KEY and restart the app.";
-  if (error instanceof OpenAI.PermissionDeniedError) return "This API key does not have permission to use the configured model.";
-  if (error instanceof OpenAI.NotFoundError) return "The configured model was not found. Check OPENAI_MODEL.";
-  if (error instanceof OpenAI.RateLimitError) return "OpenAI rate limit or billing limit reached. Check your API billing and usage limits.";
-  if (error instanceof OpenAI.APIConnectionError) return "The AI endpoint could not be reached. Leave OPENAI_BASE_URL blank for official OpenAI.";
+  const provider = getAIProvider() === "gemini" ? "Gemini" : "AI provider";
+  if (error instanceof AIProviderError && error.status === 401) return `${provider} rejected the API key. Check the configured key and restart the app.`;
+  if (error instanceof AIProviderError && error.status === 403) return `${provider} denied access to the configured model or API.`;
+  if (error instanceof AIProviderError && error.status === 404) return "The configured model was not found. Check the model name.";
+  if (error instanceof AIProviderError && error.status === 429) return `${provider} rate limit or billing limit reached. Check provider usage limits.`;
+  if (error instanceof AIProviderError) return error.message;
   return "The AI request could not be completed. Check the model, endpoint, and API key.";
 }
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: "Cross-origin requests are not allowed." }, { status: 403 });
-  if (!isAIConfigured()) return NextResponse.json({ error: "AI is not configured. Add OPENAI_API_KEY to .env.local and restart the app." }, { status: 503 });
+  if (!isAIConfigured()) return NextResponse.json({ error: "AI is not configured. Add the selected provider key to .env.local and restart the app." }, { status: 503 });
 
   try {
     const body = await request.json() as { task?: Task; content?: string };
@@ -50,13 +50,7 @@ export async function POST(request: Request) {
       if (!allowed) return NextResponse.json({ error: "AI request limit reached. Please wait a minute and try again." }, { status: 429 });
     }
 
-    const completion = await getOpenAIClient().chat.completions.create({
-      model: getOpenAIModel(),
-      temperature: 0.2,
-      messages: [{ role: "system", content: instructions[body.task] }, { role: "user", content: body.content.trim() }],
-    });
-    const result = completion.choices[0]?.message.content?.trim();
-    if (!result) return NextResponse.json({ error: "The provider returned no usable output." }, { status: 502 });
+    const result = await generateAIText(instructions[body.task], body.content.trim());
     return NextResponse.json({ result });
   } catch (error) {
     console.error("AI request failed", error);
