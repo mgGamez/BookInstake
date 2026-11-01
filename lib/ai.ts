@@ -20,6 +20,11 @@ export function isAIConfigured() {
   return getAIProvider() === "gemini" ? Boolean(process.env.GEMINI_API_KEY) : Boolean(process.env.OPENAI_API_KEY);
 }
 
+function getGeminiOutputTokens() {
+  const configured = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS);
+  return Number.isInteger(configured) && configured >= 256 && configured <= 8192 ? configured : 1800;
+}
+
 async function generateWithGemini(systemInstruction: string, content: string) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new AIProviderError("GEMINI_API_KEY is not configured.");
@@ -28,7 +33,7 @@ async function generateWithGemini(systemInstruction: string, content: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     signal: AbortSignal.timeout(75_000),
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemInstruction }] }, contents: [{ role: "user", parts: [{ text: content }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 1200 } }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemInstruction }] }, contents: [{ role: "user", parts: [{ text: content }] }], generationConfig: { temperature: 0.2, maxOutputTokens: getGeminiOutputTokens() } }),
   });
   const payload = await response.json() as { error?: { message?: string }; candidates?: { content?: { parts?: { text?: string }[] } }[] };
   if (!response.ok) throw new AIProviderError(payload.error?.message || "Gemini could not complete the request.", response.status);

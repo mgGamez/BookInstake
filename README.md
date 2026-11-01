@@ -59,9 +59,11 @@ Gemini uses its own public HTTPS API, so it does not need an `OPENAI_BASE_URL`. 
 AI_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-key
 GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MAX_OUTPUT_TOKENS=1800
 ```
 
 Use the exact model name shown in your Google AI Studio project. Remove or leave blank the OpenAI key settings when using Gemini.
+Increase `GEMINI_MAX_OUTPUT_TOKENS` up to `8192` only when an analysis needs more room; larger outputs may take longer.
 
 ## Current persistence
 

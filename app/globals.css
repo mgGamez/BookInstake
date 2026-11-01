@@ -44,6 +44,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .module-row:hover { background: rgba(115, 215, 255, .045); padding-right: .75rem; padding-left: .75rem; }
 .module-row:first-child { border-top: 1px solid var(--rule); }
 .num { font-variant-numeric: tabular-nums; }
+.ai-markdown > * + * { margin-top: 1rem; }
+.ai-markdown h1, .ai-markdown h2, .ai-markdown h3 { color: var(--text); font-weight: 600; letter-spacing: -.02em; }
+.ai-markdown h1 { font-size: 1.25rem; }
+.ai-markdown h2 { font-size: 1.125rem; }
+.ai-markdown h3 { font-size: 1rem; }
+.ai-markdown ul, .ai-markdown ol { padding-left: 1.25rem; }
+.ai-markdown ul { list-style: disc; }
+.ai-markdown ol { list-style: decimal; }
+.ai-markdown li + li { margin-top: .35rem; }
+.ai-markdown strong { color: var(--text); font-weight: 600; }
+.ai-markdown table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+.ai-markdown th, .ai-markdown td { border-bottom: 1px solid var(--rule); padding: .625rem .5rem; text-align: left; vertical-align: top; }
+.ai-markdown th { color: var(--text); font-weight: 600; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 @media (max-width: 767px) {
