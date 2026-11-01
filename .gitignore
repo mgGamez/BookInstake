@@ -7,6 +7,7 @@
 /.next/
 /out/
 tsconfig.tsbuildinfo
+.taste-skill/
 
 # production
 /build

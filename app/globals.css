@@ -1,10 +1,18 @@
 @import "tailwindcss";
 
-:root { --background: #f8fafc; --foreground: #0f172a; }
+@theme inline { --font-sans: "Inter", Arial, sans-serif; }
+
+:root { --ground: #000000; --surface: #111111; --raised: #2a2a2a; --border: #1a1a1a; --rule: #161616; --control: #444444; --text: #ffffff; --muted: #b4b4b4; --faint: #949494; --accent: #c6f24e; }
 * { box-sizing: border-box; }
-html { background: var(--background); }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+html, body { min-height: 100%; background: var(--ground); }
+body { margin: 0; color: var(--text); font-family: "Inter", Arial, sans-serif; }
 button, a { -webkit-tap-highlight-color: transparent; }
-.nav-link { display: flex; align-items: center; gap: .75rem; border-radius: .625rem; padding: .625rem .75rem; font-size: .875rem; font-weight: 500; color: #64748b; transition: background-color 150ms, color 150ms; }
-.nav-link:hover { background: #f1f5f9; color: #0f172a; }
-.nav-link-active { background: #eff6ff; color: #2563eb; }
+.nav-link { display: flex; min-height: 34px; align-items: center; gap: .625rem; border-radius: 6px; padding: .5rem .625rem; font-size: .875rem; font-weight: 400; color: #b4b4b4; transition: color 150ms, background-color 150ms; }
+.nav-link:hover { background: #111111; color: #ffffff; }
+.nav-link-active { color: #ffffff; font-weight: 500; }
+.workspace-switcher { display: flex; min-height: 42px; align-items: center; gap: .625rem; border-radius: 6px; padding: .5rem .625rem; transition: background-color 150ms; }
+.workspace-switcher:hover { background: #111111; }
+.primary-action { display: inline-flex; height: 36px; align-items: center; gap: .5rem; border-radius: 999px; background: #ffffff; padding: 0 1rem; color: #000000; font-size: .8125rem; font-weight: 600; transition: transform 150ms, background-color 150ms; }
+.primary-action:hover { background: #e8e8e8; transform: translateY(-1px); }
+.num { font-variant-numeric: tabular-nums; }
+a:focus-visible, button:focus-visible { outline: 2px solid #c6f24e; outline-offset: 3px; }
