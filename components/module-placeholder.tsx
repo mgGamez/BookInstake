@@ -1,0 +1,7 @@
+import { ArrowUpRight, Construction } from "lucide-react";
+import type { ModuleDefinition } from "@/lib/modules";
+
+export function ModulePlaceholder({ module }: { module: ModuleDefinition }) {
+  const Icon = module.icon;
+  return <section className="mx-auto max-w-3xl py-8 sm:py-16"><div className="flex size-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700"><Icon size={28} /></div><p className="mt-8 text-sm font-semibold uppercase tracking-[0.16em] text-blue-700">{module.name}</p><h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">Coming soon</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">{module.description} This foundation reserves the workspace and navigation for the module; its product functionality has not been implemented.</p><div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex gap-4"><div className="mt-0.5 text-slate-400"><Construction size={22} /></div><div><h2 className="font-semibold text-slate-900">Planned module</h2><p className="mt-1 text-sm leading-6 text-slate-600">AI workflows, data storage, integrations, and user actions will be added in a later implementation phase.</p></div></div><div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-slate-400">Module roadmap pending <ArrowUpRight size={15} /></div></div></section>;
+}
